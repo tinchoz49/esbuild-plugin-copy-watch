@@ -45,12 +45,17 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
       from = from.slice(1)
     }
 
-    if (!isGlob(from)) {
-      const stats = getStats(path.resolve(absWorkingDir, from))
+    let pattern = from
+    let isDirectory = false
+    const glob = isGlob(from)
+    if (!glob) {
+      pattern = path.resolve(absWorkingDir, from)
+      const stats = getStats(pattern)
       if (!stats) return null
       if (stats.isDirectory()) {
         // treat as a glob directory
         from = path.join(from, '**')
+        isDirectory = true
       }
     }
 
@@ -58,7 +63,13 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
       from,
       to: path.resolve(defaultTo, to),
       parent: path.resolve(absWorkingDir, globParent(from)),
-      ignored
+      ignored,
+      valid: (srcFile, fullPath) => {
+        if (glob) return anymatch(pattern, srcFile, { dot: true })
+        if (isDirectory) return fullPath.startsWith(`${pattern}/`)
+        return fullPath === pattern
+      },
+      glob
     }
   }).filter(Boolean)
 
@@ -82,7 +93,7 @@ export default (userPaths = []) => ({
 
     const onFile = (srcFile) => {
       const fullPath = path.resolve(absWorkingDir, srcFile)
-      const pathOptions = paths.find(pathOptions => anymatch(pathOptions.from, srcFile, { dot: true }))
+      const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, fullPath))
       if (!pathOptions) return
       const destFile = path.resolve(pathOptions.to, fullPath.replace(`${pathOptions.parent}${path.sep}`, ''))
       const job = copy(fullPath, destFile)
