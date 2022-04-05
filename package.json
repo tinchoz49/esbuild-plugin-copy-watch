@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "start": "node index.js",
-    "test": "uvu",
+    "test": "uvu -i tests/from -i tests/to",
     "posttest": "npm run lint",
     "lint": "standard",
     "prepublishOnly": "npm test"

@@ -23,7 +23,6 @@ test('basic', async () => {
     absWorkingDir: __dirname,
     target: ['node14'],
     outfile: 'to/out.js',
-    watch: true,
     write: false,
     plugins: [
       copy([
