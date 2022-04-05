@@ -1,0 +1,60 @@
+{
+  "name": "esbuild-plugin-copy-watch",
+  "version": "0.0.1",
+  "description": "Esbuild plugin to copy and watch for files",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "start": "node index.js",
+    "test": "uvu",
+    "posttest": "npm run lint",
+    "lint": "standard",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "anymatch": "^3.1.2",
+    "chokidar": "^3.5.3",
+    "fs-extra": "^10.0.1",
+    "glob-parent": "^6.0.2",
+    "is-glob": "^4.0.3"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.14.31"
+  },
+  "devDependencies": {
+    "del": "^6.0.0",
+    "esbuild": "^0.14.31",
+    "standard": "^16.0.4",
+    "uvu": "^0.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinchoz49/esbuild-plugin-copy-watch.git"
+  },
+  "keywords": [
+    "esbuild",
+    "plugin",
+    "copy",
+    "watch"
+  ],
+  "author": {
+    "name": "Martín Acosta",
+    "email": "tinchoz49@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tinchoz49/esbuild-plugin-copy-watch/issues"
+  },
+  "homepage": "https://github.com/tinchoz49/esbuild-plugin-copy-watch#readme",
+  "standard": {
+    "env": [
+      "node",
+      "browser"
+    ]
+  }
+}
