@@ -65,7 +65,7 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
       parent: path.resolve(absWorkingDir, globParent(from)),
       ignored,
       valid: (srcFile, fullPath) => {
-        if (glob) return anymatch(pattern, srcFile, { dot: true })
+        if (glob) return anymatch(pattern, srcFile, { dot: true }) || anymatch(pattern, fullPath, { dot: true })
         if (isDirectory) return fullPath.startsWith(`${pattern}/`)
         return fullPath === pattern
       },
