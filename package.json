@@ -3,6 +3,7 @@
   "version": "0.0.6",
   "description": "Esbuild plugin to copy and watch for files",
   "type": "module",
+  "main": "./dist/index.js",
   "exports": {
     "import": "./src/index.js",
     "require": "./dist/index.js"
