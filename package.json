@@ -1,6 +1,6 @@
 {
   "name": "esbuild-plugin-copy-watch",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Esbuild plugin to copy and watch for files",
   "type": "module",
   "exports": {
