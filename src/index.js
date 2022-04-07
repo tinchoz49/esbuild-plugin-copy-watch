@@ -79,52 +79,58 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
   }
 }
 
-export default (userPaths = []) => ({
-  name: 'copy-watch',
-  setup (build) {
-    if (userPaths.length === 0) return
+/**
+ * @param {Array<{from: string, to: string}>} userPaths
+ * @returns {{name: string, setup: function }}
+ */
+export default function copyPlugin (userPaths = []) {
+  return {
+    name: 'copy-watch',
+    setup (build) {
+      if (userPaths.length === 0) return
 
-    const { absWorkingDir = process.cwd(), outdir, outfile } = build.initialOptions
-    const defaultTo = path.resolve(absWorkingDir, outdir || path.dirname(outfile))
+      const { absWorkingDir = process.cwd(), outdir, outfile } = build.initialOptions
+      const defaultTo = path.resolve(absWorkingDir, outdir || path.dirname(outfile))
 
-    let watcher = null
-    const jobs = new Set()
-    const { paths, ignorePaths } = parseUserPaths(userPaths, absWorkingDir, defaultTo)
+      let watcher = null
+      const jobs = new Set()
+      const { paths, ignorePaths } = parseUserPaths(userPaths, absWorkingDir, defaultTo)
 
-    const onFile = (srcFile) => {
-      const fullPath = path.resolve(absWorkingDir, srcFile)
-      const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, fullPath))
-      if (!pathOptions) return
-      const destFile = path.resolve(pathOptions.to, fullPath.replace(`${pathOptions.parent}${path.sep}`, ''))
-      const job = copy(fullPath, destFile)
-      jobs.add(job)
-      job.finally(() => {
-        jobs.delete(job)
-      })
-    }
-
-    const checkFinish = async () => {
-      await Promise.all(Array.from(jobs.values()))
-      if (jobs.size === 0) return
-      await new Promise(resolve => setTimeout(resolve, 100))
-      await checkFinish()
-    }
-
-    build.onEnd(async () => {
-      if (watcher) return checkFinish()
-      watcher = chokidar.watch(paths.map(pathOptions => pathOptions.from), {
-        ignored: ignorePaths,
-        cwd: absWorkingDir
-      })
-
-      watcher.on('add', onFile)
-      watcher.on('change', onFile)
-      await new Promise(resolve => watcher.once('ready', resolve))
-      await checkFinish()
-
-      if (!build.initialOptions.watch) {
-        await watcher.close()
+      const onFile = (srcFile) => {
+        const fullPath = path.resolve(absWorkingDir, srcFile)
+        const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, fullPath))
+        if (!pathOptions) return
+        const destFile = path.resolve(pathOptions.to, fullPath.replace(`${pathOptions.parent}${path.sep}`, ''))
+        const job = copy(fullPath, destFile)
+        jobs.add(job)
+        job.finally(() => {
+          jobs.delete(job)
+        })
       }
-    })
+
+      const checkFinish = async () => {
+        await Promise.all(Array.from(jobs.values()))
+        if (jobs.size === 0) return
+        await new Promise(resolve => setTimeout(resolve, 100))
+        await checkFinish()
+      }
+
+      build.onEnd(async () => {
+        if (watcher) return checkFinish()
+        watcher = chokidar.watch(paths.map(pathOptions => pathOptions.from), {
+          ignored: ignorePaths,
+          cwd: absWorkingDir
+        })
+
+        watcher.on('add', onFile)
+        watcher.on('change', onFile)
+        await new Promise(resolve => watcher.once('ready', resolve))
+        await checkFinish()
+
+        if (!build.initialOptions.watch) {
+          await watcher.close()
+        }
+      })
+    }
   }
-})
+}

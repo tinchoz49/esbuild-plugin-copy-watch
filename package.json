@@ -7,16 +7,19 @@
     ".": "./src/index.js"
   },
   "files": [
-    "src"
+    "src",
+    "types"
   ],
   "scripts": {
     "start": "node index.js",
     "test": "uvu -i tests/from -i tests/to",
     "posttest": "npm run lint",
     "lint": "standard",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "types": "tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "dependencies": {
+    "@types/node": "^12.20.47",
     "anymatch": "^3.1.2",
     "chokidar": "^3.5.3",
     "fs-extra": "^10.0.1",
@@ -30,6 +33,7 @@
     "del": "^6.0.0",
     "esbuild": "^0.14.31",
     "standard": "^16.0.4",
+    "typescript": "^4.6.3",
     "uvu": "^0.5.3"
   },
   "repository": {
@@ -56,5 +60,6 @@
       "node",
       "browser"
     ]
-  }
+  },
+  "types": "./types/index.d.ts"
 }
