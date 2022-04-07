@@ -4,10 +4,12 @@
   "description": "Esbuild plugin to copy and watch for files",
   "type": "module",
   "exports": {
-    ".": "./src/index.js"
+    "import": "./src/index.js",
+    "require": "./dist/index.js"
   },
   "files": [
     "src",
+    "dist",
     "types"
   ],
   "scripts": {
@@ -15,7 +17,8 @@
     "test": "uvu -i tests/from -i tests/to",
     "posttest": "npm run lint",
     "lint": "standard",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm test && npm run build && npm run types",
+    "build": "esbuild src/index.js --outdir=dist --format=cjs",
     "types": "tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "dependencies": {
