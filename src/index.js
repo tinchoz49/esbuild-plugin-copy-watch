@@ -1,3 +1,7 @@
+/**
+ * @typedef { import("esbuild").Plugin } Plugin
+ */
+
 import path from 'path'
 import fs from 'fs-extra'
 import chokidar from 'chokidar'
@@ -81,7 +85,7 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
 
 /**
  * @param {Array<{from: string, to: string}>} userPaths
- * @returns {{name: string, setup: function }}
+ * @returns {Plugin}
  */
 export default function copyPlugin (userPaths = []) {
   return {

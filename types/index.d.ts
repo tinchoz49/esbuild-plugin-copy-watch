@@ -1,11 +1,9 @@
 /**
  * @param {Array<{from: string, to: string}>} userPaths
- * @returns {{name: string, setup: function }}
+ * @returns {Plugin}
  */
 export default function copyPlugin(userPaths?: Array<{
     from: string;
     to: string;
-}>): {
-    name: string;
-    setup: Function;
-};
+}>): Plugin;
+export type Plugin = import("esbuild").Plugin;
