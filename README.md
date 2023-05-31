@@ -22,12 +22,13 @@ await esbuild.build({
   bundle: true,
   outfile: 'dest/build.js',
   write: false,
-  watch: false, // if is enabled the copy plugin will watch for changes in the specify paths using chokidar
   plugins: [
-    copy([
-      { from: 'static/**', to: 'static' }, // will copy into dest/static
-      { from: ['config/*.js', '!config/private.js'], to: 'config' } // will copy config files into dest/config and ignore the private.js
-    ])
+    copy({
+      paths: [
+        { from: 'static/**', to: 'static' }, // will copy into dest/static
+        { from: ['config/*.js', '!config/private.js'], to: 'config' } // will copy config files into dest/config and ignore the private.js
+      ]
+    })
   ]
 })
 ```

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Esbuild plugin to copy and watch for files",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "exports": {
     "import": "./src/index.js",
-    "require": "./dist/index.js"
+    "require": "./dist/index.cjs"
   },
   "files": [
     "src",
@@ -19,7 +19,7 @@
     "posttest": "npm run lint",
     "lint": "standard",
     "prepublishOnly": "npm test && npm run build && npm run types",
-    "build": "esbuild src/index.js --outdir=dist --format=cjs",
+    "build": "esbuild src/index.js --outfile=dist/index.cjs --format=cjs",
     "types": "tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "dependencies": {
@@ -36,6 +36,9 @@
     "standard": "^17.0.0",
     "typescript": "^4.6.3",
     "uvu": "^0.5.3"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.17.0"
   },
   "repository": {
     "type": "git",

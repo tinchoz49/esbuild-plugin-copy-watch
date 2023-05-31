@@ -84,13 +84,17 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
 }
 
 /**
- * @param {Array<{from: string, to: string}>} userPaths
+ * @param {{
+ *  paths: Array<{from: string, to: string}>;
+ * }} options
  * @returns {Plugin}
  */
-export default function copyPlugin (userPaths = []) {
+export default function copyPlugin (options) {
   return {
     name: 'copy-watch',
     setup (build) {
+      const { paths: userPaths = [] } = options
+
       if (userPaths.length === 0) return
 
       const { absWorkingDir = process.cwd(), outdir, outfile } = build.initialOptions
@@ -130,10 +134,13 @@ export default function copyPlugin (userPaths = []) {
         watcher.on('change', onFile)
         await new Promise(resolve => watcher.once('ready', resolve))
         await checkFinish()
+      })
 
-        if (!build.initialOptions.watch) {
-          await watcher.close()
-        }
+      build.onDispose(() => {
+        if (!watcher) return
+        watcher.close().finally(() => {
+          watcher = null
+        })
       })
     }
   }
