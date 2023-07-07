@@ -8,6 +8,15 @@ import chokidar from 'chokidar'
 import globParent from 'glob-parent'
 import anymatch from 'anymatch'
 import isGlob from 'is-glob'
+import slash from 'slash'
+
+function normalize (pathName) {
+  if (path.sep === '/') return pathName
+  if (pathName.includes(':\\')) {
+    pathName = pathName.split(':')[1]
+  }
+  return path.posix.normalize(slash(pathName))
+}
 
 async function copy (src, dest) {
   return fs.copy(src, dest, {
@@ -43,7 +52,9 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
     paths.push({ from, to })
   })
 
-  paths = paths.map(({ from, to }) => {
+  paths = paths.map((props = {}) => {
+    let { from, to } = props
+
     const ignored = from.startsWith('!')
     if (ignored) {
       from = from.slice(1)
@@ -53,12 +64,13 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
     let isDirectory = false
     const glob = isGlob(from)
     if (!glob) {
-      pattern = path.resolve(absWorkingDir, from)
-      const stats = getStats(pattern)
+      const fullPath = path.resolve(absWorkingDir, from)
+      pattern = normalize(fullPath)
+      const stats = getStats(fullPath)
       if (!stats) return null
       if (stats.isDirectory()) {
         // treat as a glob directory
-        from = path.join(from, '**')
+        from = path.posix.join(from, '**')
         isDirectory = true
       }
     }
@@ -69,6 +81,8 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
       parent: path.resolve(absWorkingDir, globParent(from)),
       ignored,
       valid: (srcFile, fullPath) => {
+        srcFile = normalize(srcFile)
+        fullPath = normalize(fullPath)
         if (glob) return anymatch(pattern, srcFile, { dot: true }) || anymatch(pattern, fullPath, { dot: true })
         if (isDirectory) return fullPath.startsWith(`${pattern}/`)
         return fullPath === pattern
@@ -107,8 +121,10 @@ export default function copyPlugin (options) {
       const onFile = (srcFile) => {
         const fullPath = path.resolve(absWorkingDir, srcFile)
         const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, fullPath))
+
         if (!pathOptions) return
         const destFile = path.resolve(pathOptions.to, fullPath.replace(`${pathOptions.parent}${path.sep}`, ''))
+
         const job = copy(fullPath, destFile)
         jobs.add(job)
         job.finally(() => {

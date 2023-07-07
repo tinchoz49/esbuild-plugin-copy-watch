@@ -37,7 +37,7 @@ test('basic', async () => {
   const files = ['to/a/file-a0.txt', 'to/b/file-b0.txt', 'to/c/file-c0.txt', 'to/c/cc/file-cc0.txt', 'to/d/include.txt']
 
   for (const file of files) {
-    assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${file}`)
+    assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
   }
 })
 
@@ -63,17 +63,19 @@ test('watch', async () => {
     ]
   })
 
-  await ctx.watch()
+  try {
+    await ctx.watch()
 
-  await new Promise(resolve => setTimeout(resolve, 2 * 1000))
+    await new Promise(resolve => setTimeout(resolve, 2 * 1000))
 
-  const files = ['to/a/file-a0.txt', 'to/b/file-b0.txt', 'to/c/file-c0.txt', 'to/c/cc/file-cc0.txt', 'to/d/include.txt']
+    const files = ['to/a/file-a0.txt', 'to/b/file-b0.txt', 'to/c/file-c0.txt', 'to/c/cc/file-cc0.txt', 'to/d/include.txt']
 
-  for (const file of files) {
-    assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${file}`)
+    for (const file of files) {
+      assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
+    }
+  } finally {
+    await ctx.dispose()
   }
-
-  await ctx.dispose()
 })
 
 test.run()
