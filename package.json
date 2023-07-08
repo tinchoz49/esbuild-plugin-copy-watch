@@ -28,8 +28,7 @@
     "chokidar": "^3.5.3",
     "fs-extra": "^10.0.1",
     "glob-parent": "^6.0.2",
-    "is-glob": "^4.0.3",
-    "slash": "^5.1.0"
+    "is-glob": "^4.0.3"
   },
   "devDependencies": {
     "del": "^6.0.0",

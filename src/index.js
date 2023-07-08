@@ -8,14 +8,14 @@ import chokidar from 'chokidar'
 import globParent from 'glob-parent'
 import anymatch from 'anymatch'
 import isGlob from 'is-glob'
-import slash from 'slash'
 
 function normalize (pathName) {
   if (path.sep === '/') return pathName
   if (pathName.includes(':\\')) {
     pathName = pathName.split(':')[1]
   }
-  return path.posix.normalize(slash(pathName))
+
+  return path.posix.normalize(pathName.startsWith('\\\\?\\') ? pathName : pathName.replace(/\\/g, '/'))
 }
 
 async function copy (src, dest) {
