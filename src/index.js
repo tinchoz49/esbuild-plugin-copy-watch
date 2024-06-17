@@ -99,7 +99,8 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
 
 /**
  * @param {{
- *  paths: Array<{from: string, to: string}>;
+ *  paths: Array<{from: string, to: string}>
+ *  forceCopyOnRebuild?: boolean
  * }} options
  * @returns {Plugin}
  */
@@ -107,7 +108,7 @@ export default function copyPlugin (options) {
   return {
     name: 'copy-watch',
     setup (build) {
-      const { paths: userPaths = [] } = options
+      const { paths: userPaths = [], forceCopyOnRebuild = false } = options
 
       if (userPaths.length === 0) return
 
@@ -159,7 +160,14 @@ export default function copyPlugin (options) {
       }
 
       build.onEnd(async () => {
-        if (watcher) return checkFinish()
+        if (watcher) {
+          if (forceCopyOnRebuild) {
+            await watcher.close()
+          } else {
+            return checkFinish()
+          }
+        }
+
         watcher = chokidar.watch(paths.map(pathOptions => pathOptions.from), {
           ignored: ignorePaths,
           cwd: absWorkingDir

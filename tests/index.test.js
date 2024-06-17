@@ -12,9 +12,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const test = suite('Tests')
 
-test('basic', async () => {
-  await del(['tests/to'])
+test.before.each(async () => {
+  await del(['tests/to', 'tests/from/index.js', 'tests/from/a/sub', 'tests/from/a/delete.txt'])
+  await fs.writeFile('./tests/from/index.js', 'console.log("hello")')
+})
 
+test('basic', async () => {
   await esbuild.build({
     entryPoints: ['from/index.js'],
     bundle: true,
@@ -42,8 +45,6 @@ test('basic', async () => {
 })
 
 test('watch', async () => {
-  await del(['tests/to', 'tests/from/a/sub', 'tests/from/a/delete.txt'])
-
   const ctx = await esbuild.context({
     entryPoints: ['from/index.js'],
     bundle: true,
@@ -115,6 +116,49 @@ test('watch', async () => {
 
     assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/sub/delete.txt')))
     assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/sub')))
+  } finally {
+    await ctx.dispose()
+  }
+})
+
+test('watch forceCopyOnRebuild', async () => {
+  const ctx = await esbuild.context({
+    entryPoints: ['from/index.js'],
+    bundle: true,
+    absWorkingDir: __dirname,
+    target: ['node14'],
+    outfile: 'to/out.js',
+    write: false,
+    plugins: [
+      copy({
+        paths: [
+          { from: 'from/a', to: 'a' }
+        ],
+        forceCopyOnRebuild: true
+      })
+    ]
+  })
+
+  try {
+    await ctx.watch()
+
+    await new Promise(resolve => setTimeout(resolve, 2_000))
+
+    const files = ['to/a/file-a0.txt']
+
+    for (const file of files) {
+      assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
+    }
+
+    await fs.unlink('./tests/to/a/file-a0.txt')
+
+    await fs.writeFile('./tests/from/index.js', 'console.log("hello!")')
+
+    await new Promise(resolve => setTimeout(resolve, 2_000))
+
+    for (const file of files) {
+      assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
+    }
   } finally {
     await ctx.dispose()
   }

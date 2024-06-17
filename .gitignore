@@ -63,3 +63,4 @@ tests/to
 dist
 tests/from/a/sub
 tests/from/a/delete.txt
+tests/from/index.js

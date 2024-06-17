@@ -27,7 +27,8 @@ await esbuild.build({
       paths: [
         { from: 'static/**', to: 'static' }, // will copy into dest/static
         { from: ['config/*.js', '!config/private.js'], to: 'config' } // will copy config files into dest/config and ignore the private.js
-      ]
+      ],
+      forceCopyOnRebuild: false // force to copy the files in every rebuild
     })
   ]
 })
