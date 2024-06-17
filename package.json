@@ -24,19 +24,19 @@
     "types": "tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
   },
   "dependencies": {
-    "@types/node": "^12.20.47",
-    "anymatch": "^3.1.2",
-    "chokidar": "^3.5.3",
-    "fs-extra": "^10.0.1",
+    "@types/node": "^20.14.2",
+    "anymatch": "^3.1.3",
+    "chokidar": "^3.6.0",
+    "fs-extra": "^11.2.0",
     "glob-parent": "^6.0.2",
     "is-glob": "^4.0.3"
   },
   "devDependencies": {
     "del": "^6.0.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.21.5",
     "standard": "^17.0.0",
-    "typescript": "^4.6.3",
-    "uvu": "^0.5.3"
+    "typescript": "^5.4.5",
+    "uvu": "^0.5.6"
   },
   "repository": {
     "type": "git",

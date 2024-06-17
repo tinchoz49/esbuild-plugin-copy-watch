@@ -42,7 +42,7 @@ test('basic', async () => {
 })
 
 test('watch', async () => {
-  await del(['tests/to', 'tests/from/z'])
+  await del(['tests/to', 'tests/from/a/sub', 'tests/from/a/delete.txt'])
 
   const ctx = await esbuild.context({
     entryPoints: ['from/index.js'],
@@ -57,8 +57,7 @@ test('watch', async () => {
           { from: 'from/a', to: 'a' },
           { from: 'from/b/*.txt', to: 'b' },
           { from: 'from/c/**', to: 'c' },
-          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' },
-          { from: 'from/z/**', to: 'z' }
+          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' }
         ]
       })
     ]
@@ -69,13 +68,21 @@ test('watch', async () => {
 
     await new Promise(resolve => setTimeout(resolve, 2_000))
 
-    let files = ['to/a/file-a0.txt', 'to/b/file-b0.txt', 'to/c/file-c0.txt', 'to/c/cc/file-cc0.txt', 'to/d/include.txt', 'to/z/test-0.txt', 'to/z/test-1.txt']
+    let files = [
+      'to/a/file-a0.txt',
+      'to/a/delete.txt',
+      'to/a/sub/delete.txt',
+      'to/b/file-b0.txt',
+      'to/c/file-c0.txt',
+      'to/c/cc/file-cc0.txt',
+      'to/d/include.txt'
+    ]
 
-    await fs.mkdir('./tests/from/z')
+    await fs.mkdir('./tests/from/a/sub')
 
     await Promise.all([
-      fs.writeFile('./tests/from/z/test-0.txt', 'content'),
-      fs.writeFile('./tests/from/z/test-1.txt', 'content')
+      fs.writeFile('./tests/from/a/delete.txt', 'content'),
+      fs.writeFile('./tests/from/a/sub/delete.txt', 'content')
     ])
 
     await new Promise(resolve => setTimeout(resolve, 2_000))
@@ -86,28 +93,28 @@ test('watch', async () => {
 
     // delete the z/test file
 
-    await fs.unlink('./tests/from/z/test-0.txt')
+    await fs.unlink('./tests/from/a/delete.txt')
     await new Promise(resolve => setTimeout(resolve, 2_000))
 
-    files = files.filter(file => file !== 'to/z/test-0.txt')
+    files = files.filter(file => file !== 'to/a/delete.txt')
     for (const file of files) {
       assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
     }
 
-    assert.not.ok(await fs.pathExists(join(__dirname, 'to/z/test-0.txt')))
+    assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/delete.txt')))
 
-    await fs.rm('./tests/from/z', {
+    await fs.rm('./tests/from/a/sub', {
       recursive: true
     })
     await new Promise(resolve => setTimeout(resolve, 2_000))
 
-    files = files.filter(file => file !== 'to/z/test-1.txt')
+    files = files.filter(file => file !== 'to/a/sub/delete.txt')
     for (const file of files) {
       assert.ok(await fs.pathExists(join(__dirname, file)), `Exists: ${join(__dirname, file)}`)
     }
 
-    assert.not.ok(await fs.pathExists(join(__dirname, 'to/z/test-1.txt')))
-    assert.not.ok(await fs.pathExists(join(__dirname, 'to/z')))
+    assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/sub/delete.txt')))
+    assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/sub')))
   } finally {
     await ctx.dispose()
   }

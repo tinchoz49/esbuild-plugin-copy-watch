@@ -61,4 +61,5 @@ typings/
 .next
 tests/to
 dist
-tests/from/z
+tests/from/a/sub
+tests/from/a/delete.txt
