@@ -118,14 +118,33 @@ export default function copyPlugin (options) {
       const jobs = new Set()
       const { paths, ignorePaths } = parseUserPaths(userPaths, absWorkingDir, defaultTo)
 
-      const onFile = (srcFile) => {
-        const fullPath = path.resolve(absWorkingDir, srcFile)
-        const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, fullPath))
+      const getPaths = (srcFile) => {
+        const srcPath = path.resolve(absWorkingDir, srcFile)
+        const pathOptions = paths.find(pathOptions => pathOptions.valid(srcFile, srcPath))
 
         if (!pathOptions) return
-        const destFile = path.resolve(pathOptions.to, fullPath.replace(`${pathOptions.parent}${path.sep}`, ''))
+        let subPath = srcPath.replace(pathOptions.parent, '')
+        if (subPath.startsWith(path.sep)) {
+          subPath = subPath.slice(1)
+        }
+        const destPath = path.resolve(pathOptions.to, subPath)
+        return { srcPath, destPath }
+      }
 
-        const job = copy(fullPath, destFile)
+      const onFile = (srcFile) => {
+        const { srcPath, destPath } = getPaths(srcFile)
+        const job = copy(srcPath, destPath)
+        jobs.add(job)
+        job.finally(() => {
+          jobs.delete(job)
+        })
+      }
+
+      const onUnlink = recursive => (srcFile) => {
+        const { destPath } = getPaths(srcFile)
+        const job = fs.rm(destPath, {
+          recursive
+        }).catch(() => {})
         jobs.add(job)
         job.finally(() => {
           jobs.delete(job)
@@ -148,6 +167,8 @@ export default function copyPlugin (options) {
 
         watcher.on('add', onFile)
         watcher.on('change', onFile)
+        watcher.on('unlink', onUnlink(false))
+        watcher.on('unlinkDir', onUnlink(true))
         await new Promise(resolve => watcher.once('ready', resolve))
         await checkFinish()
       })
