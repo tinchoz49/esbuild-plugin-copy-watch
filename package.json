@@ -1,24 +1,44 @@
 {
   "name": "esbuild-plugin-copy-watch",
+  "type": "module",
   "version": "2.3.0",
   "description": "Esbuild plugin to copy and watch for files",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "exports": {
-    "import": "./src/index.js",
-    "require": "./dist/index.cjs",
-    "types": "./types/index.d.ts"
+  "author": {
+    "name": "Martín Acosta",
+    "email": "tinchoz49@gmail.com"
   },
+  "license": "MIT",
+  "homepage": "https://github.com/tinchoz49/esbuild-plugin-copy-watch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinchoz49/esbuild-plugin-copy-watch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tinchoz49/esbuild-plugin-copy-watch/issues"
+  },
+  "keywords": [
+    "esbuild",
+    "plugin",
+    "copy",
+    "watch"
+  ],
+  "exports": {
+    "types": "./types/index.d.ts",
+    "import": "./src/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "main": "./dist/index.cjs",
+  "types": "./types/index.d.ts",
   "files": [
-    "src",
     "dist",
+    "src",
     "types"
   ],
   "scripts": {
     "start": "node index.js",
     "test": "uvu -i tests/from -i tests/to",
     "posttest": "npm run lint",
-    "lint": "standard",
+    "lint": "eslint .",
     "prepublishOnly": "npm test && npm run build && npm run types",
     "build": "esbuild src/index.js --outfile=dist/index.cjs --format=cjs",
     "types": "tsc src/index.js --declaration --allowJs --emitDeclarationOnly --outDir types"
@@ -34,34 +54,15 @@
   "devDependencies": {
     "del": "^6.0.0",
     "esbuild": "^0.21.5",
-    "standard": "^17.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard-ext": "^0.0.23",
     "typescript": "^5.4.5",
     "uvu": "^0.5.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tinchoz49/esbuild-plugin-copy-watch.git"
-  },
-  "keywords": [
-    "esbuild",
-    "plugin",
-    "copy",
-    "watch"
-  ],
-  "author": {
-    "name": "Martín Acosta",
-    "email": "tinchoz49@gmail.com"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/tinchoz49/esbuild-plugin-copy-watch/issues"
-  },
-  "homepage": "https://github.com/tinchoz49/esbuild-plugin-copy-watch#readme",
   "standard": {
     "env": [
       "node",
       "browser"
     ]
-  },
-  "types": "./types/index.d.ts"
+  }
 }

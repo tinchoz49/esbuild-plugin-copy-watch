@@ -2,7 +2,7 @@
 Esbuild plugin to copy and watch for files
 
 ![Test Status](https://github.com/tinchoz49/esbuild-plugin-copy-watch/actions/workflows/test.yml/badge.svg)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard--ext-gren.svg)](https://github.com/tinchoz49/eslint-config-standard-ext)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
 ## Install

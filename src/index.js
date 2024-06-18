@@ -2,14 +2,16 @@
  * @typedef { import("esbuild").Plugin } Plugin
  */
 
-import path from 'path'
-import fs from 'fs-extra'
-import chokidar from 'chokidar'
-import globParent from 'glob-parent'
+import path from 'node:path'
+import process from 'node:process'
+
 import anymatch from 'anymatch'
+import chokidar from 'chokidar'
+import fs from 'fs-extra'
+import globParent from 'glob-parent'
 import isGlob from 'is-glob'
 
-function normalize (pathName) {
+function normalize(pathName) {
   if (path.sep === '/') return pathName
   if (pathName.includes(':\\')) {
     pathName = pathName.split(':')[1]
@@ -18,19 +20,19 @@ function normalize (pathName) {
   return path.posix.normalize(pathName.startsWith('\\\\?\\') ? pathName : pathName.replace(/\\/g, '/'))
 }
 
-async function copy (src, dest) {
+async function copy(src, dest) {
   return fs.copy(src, dest, {
     dereference: true,
     errorOnExist: false,
     force: true,
     preserveTimestamps: true,
-    recursive: true
-  }).catch(err => {
+    recursive: true,
+  }).catch((err) => {
     console.error(err)
   })
 }
 
-function getStats (src) {
+function getStats(src) {
   try {
     return fs.lstatSync(src)
   } catch (err) {
@@ -38,12 +40,12 @@ function getStats (src) {
   }
 }
 
-function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
+function parseUserPaths(userPaths, absWorkingDir, defaultTo) {
   let paths = []
 
   userPaths.forEach(({ from, to = defaultTo }) => {
     if (Array.isArray(from)) {
-      from.forEach(from => {
+      from.forEach((from) => {
         paths.push({ from, to })
       })
       return
@@ -87,15 +89,26 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
         if (isDirectory) return fullPath.startsWith(`${pattern}/`)
         return fullPath === pattern
       },
-      glob
+      glob,
     }
   }).filter(Boolean)
 
   return {
     paths: paths.filter(({ ignored }) => !ignored),
-    ignorePaths: paths.filter(({ ignored }) => ignored).map(({ from }) => from)
+    ignorePaths: paths.filter(({ ignored }) => ignored).map(({ from }) => from),
   }
 }
+
+const watchers = new Set()
+
+const exitEvents = ['exit', 'SIGTERM', 'SIGINT']
+
+const onExit = () => {
+  watchers.forEach(watcher => watcher.close().catch(() => {}))
+  watchers.clear()
+}
+
+exitEvents.forEach(event => process.once(event, onExit))
 
 /**
  * @param {{
@@ -104,10 +117,10 @@ function parseUserPaths (userPaths, absWorkingDir, defaultTo) {
  * }} options
  * @returns {Plugin}
  */
-export default function copyPlugin (options) {
+export default function copyPlugin(options) {
   return {
     name: 'copy-watch',
-    setup (build) {
+    setup(build) {
       const { paths: userPaths = [], forceCopyOnRebuild = false } = options
 
       if (userPaths.length === 0) return
@@ -144,7 +157,7 @@ export default function copyPlugin (options) {
       const onUnlink = recursive => (srcFile) => {
         const { destPath } = getPaths(srcFile)
         const job = fs.rm(destPath, {
-          recursive
+          recursive,
         }).catch(() => {})
         jobs.add(job)
         job.finally(() => {
@@ -162,6 +175,7 @@ export default function copyPlugin (options) {
       build.onEnd(async () => {
         if (watcher) {
           if (forceCopyOnRebuild) {
+            watchers.delete(watcher)
             await watcher.close()
           } else {
             return checkFinish()
@@ -170,9 +184,10 @@ export default function copyPlugin (options) {
 
         watcher = chokidar.watch(paths.map(pathOptions => pathOptions.from), {
           ignored: ignorePaths,
-          cwd: absWorkingDir
+          cwd: absWorkingDir,
         })
 
+        watchers.add(watcher)
         watcher.on('add', onFile)
         watcher.on('change', onFile)
         watcher.on('unlink', onUnlink(false))
@@ -183,10 +198,15 @@ export default function copyPlugin (options) {
 
       build.onDispose(() => {
         if (!watcher) return
-        watcher.close().finally(() => {
-          watcher = null
-        })
+        watchers.delete(watcher)
+        watcher.close()
+          .catch((err) => {
+            console.error(err)
+          })
+          .finally(() => {
+            watcher = null
+          })
       })
-    }
+    },
   }
 }

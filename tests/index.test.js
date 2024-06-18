@@ -1,10 +1,11 @@
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import del from 'del'
+import esbuild from 'esbuild'
 import fs from 'fs-extra'
 import { suite } from 'uvu'
 import * as assert from 'uvu/assert'
-import del from 'del'
-import esbuild from 'esbuild'
 
 import copy from '../src/index.js'
 
@@ -31,10 +32,10 @@ test('basic', async () => {
           { from: 'from/a', to: 'a' },
           { from: 'from/b/*.txt', to: 'b' },
           { from: 'from/c/**', to: 'c' },
-          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' }
-        ]
-      })
-    ]
+          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' },
+        ],
+      }),
+    ],
   })
 
   const files = ['to/a/file-a0.txt', 'to/b/file-b0.txt', 'to/c/file-c0.txt', 'to/c/cc/file-cc0.txt', 'to/d/include.txt']
@@ -58,10 +59,10 @@ test('watch', async () => {
           { from: 'from/a', to: 'a' },
           { from: 'from/b/*.txt', to: 'b' },
           { from: 'from/c/**', to: 'c' },
-          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' }
-        ]
-      })
-    ]
+          { from: ['from/d/**', '!from/d/ignore.txt'], to: 'd' },
+        ],
+      }),
+    ],
   })
 
   try {
@@ -76,14 +77,14 @@ test('watch', async () => {
       'to/b/file-b0.txt',
       'to/c/file-c0.txt',
       'to/c/cc/file-cc0.txt',
-      'to/d/include.txt'
+      'to/d/include.txt',
     ]
 
     await fs.mkdir('./tests/from/a/sub')
 
     await Promise.all([
       fs.writeFile('./tests/from/a/delete.txt', 'content'),
-      fs.writeFile('./tests/from/a/sub/delete.txt', 'content')
+      fs.writeFile('./tests/from/a/sub/delete.txt', 'content'),
     ])
 
     await new Promise(resolve => setTimeout(resolve, 2_000))
@@ -105,7 +106,7 @@ test('watch', async () => {
     assert.not.ok(await fs.pathExists(join(__dirname, 'to/a/delete.txt')))
 
     await fs.rm('./tests/from/a/sub', {
-      recursive: true
+      recursive: true,
     })
     await new Promise(resolve => setTimeout(resolve, 2_000))
 
@@ -132,11 +133,11 @@ test('watch forceCopyOnRebuild', async () => {
     plugins: [
       copy({
         paths: [
-          { from: 'from/a', to: 'a' }
+          { from: 'from/a', to: 'a' },
         ],
-        forceCopyOnRebuild: true
-      })
-    ]
+        forceCopyOnRebuild: true,
+      }),
+    ],
   })
 
   try {
